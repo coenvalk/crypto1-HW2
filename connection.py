@@ -35,4 +35,4 @@ class Connection:
             timestamp_str_enc_b += chr(ord(char) ^ KEYS[receiver_ID])
             timestamp_str_enc_a += chr(ord(char) ^ self.key_)
 
-        print timestamp_str_enc_a, timestamp_str_enc_b
+        print(timestamp_str_enc_a, timestamp_str_enc_b)
