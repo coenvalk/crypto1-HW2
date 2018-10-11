@@ -30,12 +30,15 @@ if __name__ == "__main__":
         raise RuntimeError("ERROR - Not everyone connected to KDC.")
     
     print("sending request to KDC.")
-    s.sendall("ALICE")
+    s.sendall(b"ALICE")
     request = "BOB,100"
-    request_enc = DES.full_encrypt(request, key10)
+    request_enc = str.encode(DES.full_encrypt(request, key10))
     s.sendall(request_enc)
     
     
     R = s.recv(1024)
     R = R.decode("utf-8")
+    L = R.split(',')
+    for i in L:
+        print(DES.full_decrypt(i, key10))
     

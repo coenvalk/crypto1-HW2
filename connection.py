@@ -1,5 +1,7 @@
 import random
 import datetime
+import DES
+import numpy as np
 
 KEYS = {}
 
@@ -20,19 +22,22 @@ class Connection:
         self.ip_ = ip
 
     def setup_key_distribution(self, receiver_ID, N):
-        session_key = random.getrandombits(8)
-        session_key_enc_a = session_key ^ self.key_
-        receiver_ID_enc_a = receiver_ID ^ self.key_
-        N_enc_a = N ^ self.key_
+        sender_key_10 = np.concatenate((DES.byte_to_arr(self.key_), np.zeros(2)))
+        receiver_key_10 = np.concatenate((DES.byte_to_arr(KEYS[receiver_ID]), np.zeros(2)))
+        session_key = random.getrandbits(8)
+        session_key_enc_a = DES.full_encrypt(str(session_key), sender_key_10)
+        receiver_ID_enc_a = DES.full_encrypt(str(receiver_ID), sender_key_10)
+        N_enc_a = DES.full_encrypt(str(N), sender_key_10)
 
-        session_key_enc_b = session_key ^ KEYS[receiver_ID]
-        sender_id_enc_b = self.id_ ^ KEYS[receiver_ID]
+        session_key_enc_b = DES.full_encrypt(str(session_key), receiver_key_10)
+        sender_id_enc_b = DES.full_encrypt(str(self.id_), receiver_key_10)
         timestamp = datetime.datetime.now()
-        timestamp_str = unicode(timestamp)
-        timestamp_str_enc_b = ""
-        timestamp_str_enc_a = ""
-        for char in timestamp_str:
-            timestamp_str_enc_b += chr(ord(char) ^ KEYS[receiver_ID])
-            timestamp_str_enc_a += chr(ord(char) ^ self.key_)
+        timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        timestamp_str_enc_b = DES.full_encrypt(timestamp_str, receiver_key_10)
+        timestamp_str_enc_a = DES.full_encrypt(timestamp_str, sender_key_10)
 
-        print(timestamp_str_enc_a, timestamp_str_enc_b)
+        return str(session_key_enc_a) + "," + str(receiver_ID_enc_a) + "," + \
+            str(N_enc_a) + \
+            str(timestamp_str_enc_a) + "," + str(session_key_enc_b) + "," + \
+            str(sender_id_enc_b) + "," + str(timestamp_str_enc_b)
+    

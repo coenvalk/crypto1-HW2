@@ -55,7 +55,7 @@ if __name__ == "__main__":
     readable, writable, exceptional = select.select(fds, [], [])
     for C in readable:
         ID = C.recv(1024)
-        ID = ID.decode("utf-8")[:-1]
+        ID = ID.decode("utf-8")
         # ID user is going to request a session key!
         # beyond the ID, everything is going to be encrypted with
         # KDC and user's personal key.
@@ -64,5 +64,9 @@ if __name__ == "__main__":
         print(connection.KEYS[ID])
         key10 = np.concatenate((DES.byte_to_arr(connection.KEYS[ID]), np.zeros(2)))
         print(key10)
-        request = DES.full_encrypt(request_enc, key10)
-        print(request)
+        request = DES.full_decrypt(request_enc, key10)
+        info = request.split(',')
+        
+        C.sendall(str.encode(Alice.setup_key_distribution(info[0], int(info[1]))))
+
+        # my work here is done.
