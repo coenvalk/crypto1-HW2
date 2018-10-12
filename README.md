@@ -30,10 +30,15 @@ Then start both Bob and Alice's respective user programs:
 
 ```
 python3 BOB.py
+```
+
+Finally Alice:
+
+```
 python3 ALICE.py
 ```
 
-Every program must be run simultaneously, in different terminal windows. By default, Alice and Bob will look for the KDC at ip address 127.0.0.1, but this can be changed by adding a command line argument:
+Every program must be run one after the other, in different terminal windows. By default, Alice and Bob will look for the KDC at ip address 127.0.0.1, but this can be changed by adding a command line argument:
 
 ```bash
 python3 ALICE.py <ip.address>
@@ -43,9 +48,14 @@ python3 ALICE.py <ip.address>
 
 ## Advantages
 
-The 
+There are a few advantages to the Needham Schroeder protocol. most notably, the system is lightweight and easy to implement, as well as fast to encrypt and decrypt. If implemented correctly, can also be protected against replay attacks using extra authentication and time stamps.
 
 ## Drawbacks
 
+As effective time stamps are in verification and authentication, they are far from perfect. Consider for example people that wish to communicate with each other across timezones. A lot of care needs to be taken to ensure that timezones are converted properly. If not, people that are trying to genuinely communicate with each other might be flagged as adversaries that are attempting replay attacks, and possible adversaries might pass through and receive messages without problem. We can include more checks and authentication, however with more and more authentication, we begin to lose the simplicity or speed we gain with using the Needham Schroeder protocol.
+
+Furthermore, this example only explores a single message being sent with one session key. in a real world example, we would need to be mindful that our private session key is not being used too often, so our security is not compromised.
+
 ## Further Work
 
+For this implementation to be more secure to replay attacks, standard time zones need to be agreed upon to check timestamps, and we may need to incorporate extra nonces and possibly MAC's. While increasing the complexity of the Needham-Schroeder protocol, these are in this case necessary measures to take to ensure the security of the KDC, and the session protocol. Additionally, every so often, the session key needs to be updated again, to ensure that we are not leaking information about the key as we use the symmetric key more and more.

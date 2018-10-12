@@ -1,7 +1,9 @@
 import sys
 import socket
 import DES
+import time
 import numpy as np
+import datetime
 
 port = 8888
 
@@ -39,6 +41,28 @@ if __name__ == "__main__":
     R = s.recv(1024)
     R = R.decode("utf-8")
     L = R.split(',')
-    for i in L:
-        print(DES.full_decrypt(i, key10))
+    session_key = int(DES.full_decrypt(L[0], key10))
+    bob_ip = DES.full_decrypt(L[1], key10).split("'")[1].split("'")[0]
+    print(bob_ip)
+    N = int(DES.full_decrypt(L[2], key10))
+    assert N == 100 # authentication of N
+    T = DES.full_decrypt(L[3], key10)
+
+    # check timestamp issues
+    D = datetime.datetime.strptime(T, '%Y-%m-%d %H:%M:%S')
+    diff = datetime.datetime.now() - D
+    assert diff < datetime.timedelta(0, 5, 0) # have a timeout of 5 seconds to prevent replay attacks
+    # send rest of package to BOB:
+    package = str.encode(L[4] + "," + L[5] + "," + L[6])
     
+    news = socket.socket()
+    news.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    news.connect((bob_ip, 3333))
+    news.sendall(package)
+
+    R = news.recv(1024).decode("utf-8")
+    print(session_key)
+    R_dec = DES.full_decrypt(R, np.concatenate((DES.byte_to_arr(session_key), np.zeros(2))))
+    print(R_dec)
+    s.close()

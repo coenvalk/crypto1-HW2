@@ -21,12 +21,12 @@ class Connection:
     def add_ip(self, ip):
         self.ip_ = ip
 
-    def setup_key_distribution(self, receiver_ID, N):
+    def setup_key_distribution(self, receiver_ID, N, receiver_ip):
         sender_key_10 = np.concatenate((DES.byte_to_arr(self.key_), np.zeros(2)))
         receiver_key_10 = np.concatenate((DES.byte_to_arr(KEYS[receiver_ID]), np.zeros(2)))
         session_key = random.getrandbits(8)
         session_key_enc_a = DES.full_encrypt(str(session_key), sender_key_10)
-        receiver_ID_enc_a = DES.full_encrypt(str(receiver_ID), sender_key_10)
+        receiver_ID_enc_a = DES.full_encrypt(str(receiver_ip), sender_key_10)
         N_enc_a = DES.full_encrypt(str(N), sender_key_10)
 
         session_key_enc_b = DES.full_encrypt(str(session_key), receiver_key_10)
@@ -37,7 +37,7 @@ class Connection:
         timestamp_str_enc_a = DES.full_encrypt(timestamp_str, sender_key_10)
 
         return str(session_key_enc_a) + "," + str(receiver_ID_enc_a) + "," + \
-            str(N_enc_a) + \
+            str(N_enc_a) + "," + \
             str(timestamp_str_enc_a) + "," + str(session_key_enc_b) + "," + \
             str(sender_id_enc_b) + "," + str(timestamp_str_enc_b)
     

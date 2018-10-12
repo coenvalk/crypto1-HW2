@@ -15,6 +15,7 @@ def do_connect(s, port, conn_dict):
     s.listen(1)
     conn, addr = s.accept()
     ID = conn.recv(1024)
+    ID = ID.decode("utf-8")
     conn_dict[ID] = (addr, conn)
 
 if __name__ == "__main__":
@@ -67,6 +68,7 @@ if __name__ == "__main__":
         request = DES.full_decrypt(request_enc, key10)
         info = request.split(',')
         
-        C.sendall(str.encode(Alice.setup_key_distribution(info[0], int(info[1]))))
+        C.sendall(str.encode(Alice.setup_key_distribution(info[0], int(info[1]), conn_dict[info[0]][0])))
 
-        # my work here is done.
+    # session key is sent. my work here is done. 
+    s.close()
